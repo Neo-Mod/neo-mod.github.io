@@ -46160,7 +46160,6 @@ __webpack_require__.r(__webpack_exports__);
     id: "tw.customReporters.description"
   }),
   tags: ['nm'],
-  incompatibleWithScratch: true,
   featured: true
 }, {
   // Not really an extension, but it's easiest to present it as one
@@ -46190,7 +46189,6 @@ __webpack_require__.r(__webpack_exports__);
     defaultMessage: "Weird new blocks.",
     id: "tw.twExtension.description"
   }),
-  incompatibleWithScratch: true,
   tags: ['nm'],
   featured: true
 }, {
