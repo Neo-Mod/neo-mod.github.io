@@ -32842,6 +32842,7 @@ const creditLink = credit => credit.link;
 let cachedTwGallery = null;
 let twGalleryMirror = false;
 let cachedPenguinMod = null;
+let cachedGaiaMod = null;
 let cachedOtherExtensions = null;
 let cachedGallery = null;
 const fetchTwLibrary = async () => {
@@ -32914,6 +32915,30 @@ const fetchPenguinMod = async () => {
     featured: true
   }));
 };
+const fetchGaiaMod = async () => {
+  return neomod_extensions_gallery_src_lib_extensions_js__WEBPACK_IMPORTED_MODULE_4__["gmExtensions"].map(extension => ({
+    name: extension.name,
+    nameTranslations: extension.nameTranslations || {},
+    description: extension.description,
+    descriptionTranslations: extension.descriptionTranslations || {},
+    extensionId: extension.id,
+    extensionURL: extension.code.startsWith('http') ? extension.code : "https://gaiamod-main.github.io/extensions/".concat(extension.code),
+    iconURL: extension.banner.startsWith('http') ? extension.banner : "https://gaiamod-main.github.io/images/".concat(extension.banner || 'unknown.svg'),
+    tags: ['gm'],
+    credits: [...(typeof extension.creator == 'object' ? extension.creator : [extension.creator] || false), ...(extension.notes ? [extension.notes] : [])].map(credit => {
+      if (extension.notes && credit == extension.notes) return credit;
+      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("a", {
+        href: extension.isGitHub ? "https://github.com/".concat(credit) : "https://scratch.mit.edu/users/".concat(credit),
+        target: "_blank",
+        rel: "noreferrer",
+        key: credit
+      }, credit);
+    }),
+    docsURI: null,
+    samples: null,
+    featured: true
+  }));
+};
 const fetchOtherExtensions = async () => {
   return neomod_extensions_gallery_src_lib_extensions_js__WEBPACK_IMPORTED_MODULE_4__["otherExtensions"].map(extension => ({
     name: extension.name,
@@ -32977,6 +33002,7 @@ class ExtensionLibrary extends react__WEBPACK_IMPORTED_MODULE_2___default.a.Pure
     lodash_bindall__WEBPACK_IMPORTED_MODULE_0___default()(this, ['handleItemSelect']);
     this.state = {
       pmExtensions: cachedPenguinMod,
+      gmExtensions: cachedGaiaMod,
       otherExtensions: cachedOtherExtensions,
       twGallery: cachedTwGallery,
       gallery: cachedGallery,
@@ -33008,6 +33034,19 @@ class ExtensionLibrary extends react__WEBPACK_IMPORTED_MODULE_2___default.a.Pure
         cachedPenguinMod = gallery;
         this.setState({
           pmExtensions: gallery
+        });
+        clearTimeout(timeout);
+      }).catch(error => {
+        _lib_log__WEBPACK_IMPORTED_MODULE_6__["default"].error(error);
+        this.setState({
+          galleryError: error
+        });
+        clearTimeout(timeout);
+      });
+      fetchGaiaMod().then(gallery => {
+        cachedGaiaMod = gallery;
+        this.setState({
+          gmExtensions: gallery
         });
         clearTimeout(timeout);
       }).catch(error => {
@@ -33126,14 +33165,38 @@ class ExtensionLibrary extends react__WEBPACK_IMPORTED_MODULE_2___default.a.Pure
     }
     library.push('---');
     if (this.state.pmExtensions) {
-      const filteredOther = this.state.pmExtensions.filter(item => !addedIds.has(item.extensionId)).map(i => {
+      const filteredPm = this.state.pmExtensions.filter(item => !addedIds.has(item.extensionId)).map(i => {
+        addedIds.add(i.extensionId);
+        return translateGalleryItem(i, locale);
+      });
+      library.push(...filteredPm.map(toLibraryItem));
+    } else if (this.state.galleryTimedOut && !this.state.pmExtensions) {
+      library.push(toLibraryItem(_lib_libraries_extensions_index_jsx__WEBPACK_IMPORTED_MODULE_7__["galleryLoading"]));
+    } else if (this.state.galleryError && !this.state.pmExtensions) {
+      library.push(toLibraryItem(_lib_libraries_extensions_index_jsx__WEBPACK_IMPORTED_MODULE_7__["galleryError"]));
+    }
+    library.push('---');
+    if (this.state.gmExtensions) {
+      const filteredGm = this.state.gmExtensions.filter(item => !addedIds.has(item.extensionId)).map(i => {
+        addedIds.add(i.extensionId);
+        return translateGalleryItem(i, locale);
+      });
+      library.push(...filteredGm.map(toLibraryItem));
+    } else if (this.state.galleryTimedOut && !this.state.gmExtensions) {
+      library.push(toLibraryItem(_lib_libraries_extensions_index_jsx__WEBPACK_IMPORTED_MODULE_7__["galleryLoading"]));
+    } else if (this.state.galleryError && !this.state.gmExtensions) {
+      library.push(toLibraryItem(_lib_libraries_extensions_index_jsx__WEBPACK_IMPORTED_MODULE_7__["galleryError"]));
+    }
+    library.push('---');
+    if (this.state.otherExtensions) {
+      const filteredOther = this.state.otherExtensions.filter(item => !addedIds.has(item.extensionId)).map(i => {
         addedIds.add(i.extensionId);
         return translateGalleryItem(i, locale);
       });
       library.push(...filteredOther.map(toLibraryItem));
-    } else if (this.state.galleryTimedOut && !this.state.pmExtensions) {
+    } else if (this.state.galleryTimedOut && !this.state.otherExtensions) {
       library.push(toLibraryItem(_lib_libraries_extensions_index_jsx__WEBPACK_IMPORTED_MODULE_7__["galleryLoading"]));
-    } else if (this.state.galleryError && !this.state.pmExtensions) {
+    } else if (this.state.galleryError && !this.state.otherExtensions) {
       library.push(toLibraryItem(_lib_libraries_extensions_index_jsx__WEBPACK_IMPORTED_MODULE_7__["galleryError"]));
     }
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_components_library_library_jsx__WEBPACK_IMPORTED_MODULE_9__["default"], {
@@ -46646,6 +46709,15 @@ __webpack_require__.r(__webpack_exports__);
   }),
   helpLink: 'https://scratch.mit.edu/vernier'
 }, {
+  name: 'App Utilities',
+  extensionId: 'appmaker',
+  iconURL: 'https://gaiamod-main.github.io/static/assets/ab0f9df0edc8698e6e01580a343b5423.svg',
+  insetIconURL: 'https://gaiamod-main.github.io/static/assets/7698093467c8a39f4d05107e7c979c06.svg',
+  tags: ['other'],
+  collaborator: 'LibreKitten',
+  description: 'Develop apps in NeoMod.',
+  featured: true
+}, {
   // Not really an extension, but it's easiest to present it as one
   name: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_intl__WEBPACK_IMPORTED_MODULE_1__["FormattedMessage"], {
     defaultMessage: "Custom Reporters",
@@ -47119,8 +47191,12 @@ __webpack_require__.r(__webpack_exports__);
     "defaultMessage": "Other mods"
   },
   pm: {
-    "id": "nm.libraryTags.other",
+    "id": "nm.libraryTags.pm",
     "defaultMessage": "PenguinMod"
+  },
+  gm: {
+    "id": "nm.libraryTags.gm",
+    "defaultMessage": "GaiaMod"
   },
   animals: {
     "id": "gui.libraryTags.animals",
@@ -47324,6 +47400,9 @@ __webpack_require__.r(__webpack_exports__);
 {
   tag: 'pm',
   intlLabel: _tag_messages_js__WEBPACK_IMPORTED_MODULE_0__["default"].pm
+}, {
+  tag: 'gm',
+  intlLabel: _tag_messages_js__WEBPACK_IMPORTED_MODULE_0__["default"].gm
 }, {
   tag: 'other',
   intlLabel: _tag_messages_js__WEBPACK_IMPORTED_MODULE_0__["default"].other
